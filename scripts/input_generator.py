@@ -1,87 +1,48 @@
 #!/usr/bin/python
 
-import math, sys
-import random as rnd
+import sys, os, math
 
-# this scripts can generate input for ranklib
-# TODO: meg erdemes lenne ezt megnezni: a 0.05 illetve 0.1-es eltolast novelni stb.
+def min_val_tie(l, full_size):
+    ret_val = 0;
+    first = True
+    for i in l:
+        num = l[i]
+        if first:
+            ret_val = num
+            first = False
+        if ret_val > num:
+            ret_val = num
+    return ret_val - 1 # not the minimum value is returned!
 
-def sample_ratio_lin(x, n):
-	return float(x) / n + 0.05
+def average_tie(l,full_size):
+	print full_size, len(l)
+	print l
+	deficit = full_size - len(l)
+	val = sum(range(len(l)+1, full_size+1))
+	return float(val) / deficit
 
-def sample_ratio_sq(x, n):
-	return float(math.pow(x,2)) / math.pow(n, 2) + 0.1
+def extract_union(day_lists):
+	num_of_days = len(day_lists)
+	record_ids = {}
+	for l in day_lists:
+		for record in l:
+			record_ids[record] = 1
+	return record_ids.keys()
 
-def generate_day_for_feature(day, current_list, f):
-	n = len(current_list)
-	index_list = range(0,n)
-	selected_index = rnd.sample(index_list, int(math.ceil(f(day, n) * n)))
-	#print math.ceil(f(day, n) * n)
-	selected = []
+def expand_data(day_lists, rank_computer):
+	record_union = extract_union(day_lists)
+	full_size = len(record_union)
 	out = []
-	for i in range(0, n):
-		if i not in selected_index:
-			out.append(current_list[i])
-		else:
-			selected.append(current_list[i])
-	rnd.shuffle(selected)
-	out += selected
-	out_indexes = [0] * n
-	for i in range(0,n):
-		out_indexes[out[i]-1] = i+1
-	return [out, out_indexes]
-
-def generate_feature_vectors(n, perm_lists):
-	out = []
-	l = len(perm_lists)
-	for i in range(n):
-		f_list = []
-		for j in range(l):
-			f_list.append(perm_lists[j][i])
-		out.append(f_list)
+	print day_lists
+	for l in day_lists:
+		expanded_data = dict(l) # copy
+		tie_rank = rank_computer(l, full_size)
+		for record in record_union:
+			if record not in l:
+				expanded_data[record] = tie_rank
+		out.append(expanded_data)
 	return out
 
-def write_record(record_id, record_features):
-	l = len(record_features)
-	out = str(record_id) + ' qid:1'
-	for i in range(l):
-		out += (' ' + str(i+1) + ":" + str(record_features[i]))
-	return (out + '\n')
-
-def write_to_file(file_path, label_list, feature_lists):
-	f = open(file_path, 'w')
-	l = len(label_list)
-	order = range(l)
-	rnd.shuffle(order) # this way learning to rank cannot use order of labels
-	for i in order:
-		f.write(write_record(label_list[i], feature_lists[i]))
-	f.close()
 
 if __name__ == "__main__":
-	if len(sys.argv) == 4:
-		item_num = int(sys.argv[1])
-		feature_num = int(sys.argv[2])
-		output_prefix = sys.argv[3] # with file path
-		ranked_list = range(1, item_num + 1)
-		lin_generated = []
-		sq_generated = []
-
-		print 'current: ' + str(ranked_list)
-		for i in range(1, feature_num + 1):
-			lin_generated.append(generate_day_for_feature(i, ranked_list, sample_ratio_lin)[1])
-			sq_generated.append(generate_day_for_feature(i, ranked_list, sample_ratio_sq)[1])
-		
-		lin_feature_lists = generate_feature_vectors(item_num, lin_generated)
-		sq_feature_lists = generate_feature_vectors(item_num, sq_generated)
-
-		write_to_file(output_prefix+'lin_gen.data', ranked_list, lin_feature_lists)
-		write_to_file(output_prefix+'sq_gen.data', ranked_list, sq_feature_lists)
-
-		print lin_generated
-		print lin_feature_lists
-		print
-		print sq_generated
-		print sq_feature_lists
-
-	else:
-		print 'Usage: <item_num> <feature_num> <output_prefix>'
+	print "hello!"
