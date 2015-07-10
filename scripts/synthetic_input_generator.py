@@ -2,6 +2,7 @@
 
 import math, sys
 import random as rnd
+import input_generator as ig
 
 # this scripts can generate input for ranklib
 # TODO: meg erdemes lenne ezt megnezni: a 0.05 illetve 0.1-es eltolast novelni stb.
@@ -41,22 +42,6 @@ def generate_feature_vectors(n, perm_lists):
 		out.append(f_list)
 	return out
 
-def write_record(record_id, record_features):
-	l = len(record_features)
-	out = str(record_id) + ' qid:1'
-	for i in range(l):
-		out += (' ' + str(i+1) + ":" + str(record_features[i]))
-	return (out + '\n')
-
-def write_to_file(file_path, label_list, feature_lists):
-	f = open(file_path, 'w')
-	l = len(label_list)
-	order = range(l)
-	rnd.shuffle(order) # this way learning to rank cannot use order of labels
-	for i in order:
-		f.write(write_record(label_list[i], feature_lists[i]))
-	f.close()
-
 if __name__ == "__main__":
 	if len(sys.argv) == 4:
 		item_num = int(sys.argv[1])
@@ -74,8 +59,8 @@ if __name__ == "__main__":
 		lin_feature_lists = generate_feature_vectors(item_num, lin_generated)
 		sq_feature_lists = generate_feature_vectors(item_num, sq_generated)
 
-		write_to_file(output_prefix+'lin_gen.data', ranked_list, lin_feature_lists)
-		write_to_file(output_prefix+'sq_gen.data', ranked_list, sq_feature_lists)
+		ig.write_to_file(output_prefix+'lin_gen.data', ranked_list, lin_feature_lists)
+		ig.write_to_file(output_prefix+'sq_gen.data', ranked_list, sq_feature_lists)
 
 		print lin_generated
 		print lin_feature_lists
