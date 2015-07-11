@@ -21,7 +21,7 @@ def average_tie(l,full_size):
 	val = sum(range(len(l)+1, full_size+1))
 	return float(val) / deficit
 
-def binary_tie(l,full_size):
+def set_zero(l,full_size):
 	return 0.0
 
 ################### rank processors ##################
@@ -70,7 +70,7 @@ def write_to_file(file_path, label_dict, feature_dicts):
 	f = open(file_path, 'w')
 	l = len(label_dict)
 	order = range(l)
-	rnd.shuffle(order) # this way learning to rank cannot use order of labels
+	#rnd.shuffle(order) # this way learning to rank cannot use order of labels # random ordering switched off!!!
 	key_list = label_dict.keys()
 	for i in order:
 		f.write(write_record(label_dict[key_list[i]], feature_lists[key_list[i]]))
@@ -146,21 +146,21 @@ if __name__ == "__main__":
 		
 		label_ranker = ''
 		if label_rank_type == 'binary':
-			label_ranker = binary_tie
+			label_ranker = set_zero
 		elif label_rank_type == 'position':
 			label_ranker = average_tie
 		elif label_rank_type == 'centrality':
-			label_ranker = min_val_tie
+			label_ranker = set_zero #min_val_tie
 		else:
 			print 'ERROR: ' + rank_type + ' ranking is not implemented! Choose from "centrality/position/binary".'
 
 		feature_ranker = ''
 		if feature_rank_type == 'binary':
-			feature_ranker = binary_tie
+			feature_ranker = set_zero
 		elif feature_rank_type == 'position':
 			feature_ranker = average_tie
 		elif feature_rank_type == 'centrality':
-			feature_ranker = min_val_tie
+			feature_ranker = set_zero #min_val_tie
 		else:
 			print 'ERROR: ' + rank_type + ' ranking is not implemented! Choose from "centrality/position/binary".'
 		
