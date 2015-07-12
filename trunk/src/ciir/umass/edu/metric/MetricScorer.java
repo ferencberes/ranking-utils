@@ -12,6 +12,7 @@ package ciir.umass.edu.metric;
 import java.util.List;
 
 import ciir.umass.edu.learning.RankList;
+import ciir.umass.edu.utilities.Sorter;
 
 /**
  * @author vdang
@@ -53,6 +54,24 @@ public class MetricScorer {
 		return rel;
 	}
 	
+	// NOTE: for correlation scorers
+	protected double[] getLabels(RankList rl)
+	{
+		double[] rel = new double[rl.size()];
+		for(int i=0;i<rl.size();i++)
+			rel[i] = rl.get(i).getLabel();
+		return rel;
+	}
+	
+	// NOTE: for correlation scorers
+	protected double[] getCachedValues(RankList rl)
+	{
+		double[] rel = new double[rl.size()];
+		for(int i=0;i<rl.size();i++)
+			rel[i] = rl.get(i).getCached();
+		return rel;
+	}
+	
 	/**
 	 * MUST BE OVER-RIDDEN
 	 * @param rl
@@ -73,5 +92,66 @@ public class MetricScorer {
 	public double[][] swapChange(RankList rl)
 	{
 		return null;
-	}	
+	}
+	
+	// NOTE: for correlation scorers
+	protected StatStorer getStatsAndOrigiList(double[] records)
+	{
+		int size = records.length;
+		int[] idx = Sorter.sort(records, false);
+		
+		double sum = 0.0;
+		for(int i=0;i<size;i++) {
+			sum += records[i]; // TODO: inkabb itt kene osztani?
+		}
+		double mean = sum / size;
+		double var_s = 0.0;
+		for(int i=0;i<size;i++)
+			var_s += Math.pow(records[i]-mean, 2);
+		double variance = var_s / size;
+		return new StatStorer(idx, mean, variance);
+	}
+	
+	// NOTE: for correlation scorers
+	protected StatStorer getWeightedStatsAndOrigiList(double[] records)
+	{
+		int size = records.length;
+		int[] idx = Sorter.sort(records, false);
+		
+		double sum = 0.0;
+		double weight_sum = 0.0;
+		for(int i=0;i<size;i++) {
+			weight_sum += 1 / (i+1);
+			sum += records[idx[i]] * (1 / (i+1));
+		}
+		double mean = sum / weight_sum;
+		double var_s = 0.0;
+		for(int i=0;i<size;i++)
+			var_s += Math.pow(records[idx[i]]-mean, 2) * (1 / (i+1));
+		double w_variance = var_s / weight_sum;
+		return new StatStorer(idx, mean, w_variance);
+	}
+	
+	// NOTE: for correlation scorers
+	public class StatStorer {
+		private int[] sorted_idx;
+		private  double mean;
+		private double variance;
+	
+		public StatStorer(int[] sorted, double m, double var) {
+			this.sorted_idx = sorted;
+			this.mean = m;
+			this.variance = var;
+		}
+
+		public int[] getSorted_idx() {
+			return sorted_idx;
+		}
+		public double getMean() {
+			return mean;
+		}
+		public double getVariance() {
+			return variance;
+		}
+	}
 }
