@@ -132,8 +132,8 @@ def centrality_to_position(ret_val, ret_sort):
 if __name__ == "__main__":
 	if len(sys.argv) == 8:
 		data_folder = sys.argv[1]
-		label_rank_type = sys.argv[2] # centrality/position/binary
-		feature_rank_type = sys.argv[3] # centrality/position/binary
+		feature_rank_type = sys.argv[2] # centrality/position/binary
+		label_rank_type = sys.argv[3] # centrality/position/binary
 		top_cut = int(sys.argv[4]) # default 10, all: -1
 		from_interval_id = int(sys.argv[5])
 		to_interval_id = int(sys.argv[6]) # this interval is the target
