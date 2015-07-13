@@ -21,11 +21,10 @@ public class CorrelationScorer extends MetricScorer {
 	
 	public double score(RankList rl)
 	{
-		
 		k = rl.size();
 		double[] labels = getLabels(rl);
 		double[] cached_values = getCachedValues(rl);
-		return getCorrelation(cached_values, getWeightedStatsAndSortedIndex(cached_values), labels, getWeightedStatsAndSortedIndex(labels));
+		return getCorrelation(cached_values, getStatsAndSortedIndex(cached_values), labels, getStatsAndSortedIndex(labels));
 	}	
 	
 	public String name()
@@ -44,14 +43,23 @@ public class CorrelationScorer extends MetricScorer {
 		double c_variance = stats_for_cached.getVariance();
 		double l_variance = stats_for_labels.getVariance();
 		double denom = size * Math.sqrt(c_variance * l_variance);
+		//System.out.println(denom);
+		System.out.println(printVector(labels));
+		System.out.println(printVector(cached_values));
 		
 		double[][] changes = new double[rl.size()][];
-		for(int i=0;i<rl.size();i++)
+		for(int i=0;i<rl.size();i++) {
 			changes[i] = new double[rl.size()];
-		for(int i=0;i<size;i++)
-			for(int j=i+1;j<rl.size();j++)
+		}
+		for(int i=0;i<size;i++) {
+			for(int j=i+1;j<rl.size();j++) {
 				changes[j][i] = changes[i][j] = ((cached_values[i] - cached_values[j]) * (labels[i] - labels[j])) / denom;
-
+				System.out.println((cached_values[i] - cached_values[j]));
+				System.out.println((labels[i] - labels[j]));
+				System.out.println(changes[i][j]);
+				System.exit(2);
+			}
+		}
 		return changes;
 	}
 	
@@ -65,14 +73,5 @@ public class CorrelationScorer extends MetricScorer {
 			sum += (cached[i]-c_mean) * (labels[i] - l_mean);
 		}
 		return sum / (cached.length * Math.sqrt(c_variance * l_variance));
-	}
-	
-	private String printVector(double[] vec) {
-		String out = "";
-		for(int i=0; i<vec.length; i++) {
-			out += vec[i] + ",";
-		}
-		out += "\n";
-		return out;
 	}
 }

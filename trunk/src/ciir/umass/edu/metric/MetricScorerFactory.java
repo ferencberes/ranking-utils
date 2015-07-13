@@ -11,7 +11,7 @@ package ciir.umass.edu.metric;
 
 import java.util.HashMap;
 
-/**
+/**	
  * @author vdang
  */
 public class MetricScorerFactory {

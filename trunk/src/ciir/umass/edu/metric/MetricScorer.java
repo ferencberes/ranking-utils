@@ -131,13 +131,13 @@ public class MetricScorer {
 		double sum = 0.0;
 		double weight_sum = 0.0;
 		for(int i=0;i<size;i++) {
-			weight_sum += 1 / (i+1);
-			sum += records[idx[i]] * (1 / (i+1));
+			weight_sum += (1.0 / (i+1));
+			sum += (records[idx[i]] * (1.0 / (i+1)));
 		}
 		double mean = sum / weight_sum;
 		double var_s = 0.0;
 		for(int i=0;i<size;i++)
-			var_s += Math.pow(records[idx[i]]-mean, 2) * (1 / (i+1));
+			var_s += (Math.pow(records[idx[i]]-mean, 2) * (1.0 / (i+1)));
 		double w_variance = var_s / weight_sum;
 		return new StatStorer(idx, mean, w_variance);
 	}
@@ -163,5 +163,14 @@ public class MetricScorer {
 		public double getVariance() {
 			return variance;
 		}
+	}
+	
+	protected String printVector(double[] vec) {
+		String out = "";
+		for(int i=0; i<vec.length; i++) {
+			out += vec[i] + ",";
+		}
+		out += "\n";
+		return out;
 	}
 }

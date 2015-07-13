@@ -21,9 +21,7 @@ public class WeightedCorrelationScorer extends MetricScorer {
 	
 	public double score(RankList rl)
 	{
-		
-		k = rl.size();
-		
+		k = rl.size();	
 		double[] labels = getLabels(rl);
 		double[] cached_values = getCachedValues(rl);
 		return getWeightedCorrelation(cached_values, getWeightedStatsAndSortedIndex(cached_values), labels, getWeightedStatsAndSortedIndex(labels));
@@ -50,13 +48,21 @@ public class WeightedCorrelationScorer extends MetricScorer {
 			w_sum += 1 / (i+1);
 		}
 		double denom = w_sum * Math.sqrt(c_variance * l_variance);
+		//System.out.println(denom);
+		System.out.println(printVector(labels));
+		System.out.println(printVector(cached_values));
 		
 		double[][] changes = new double[rl.size()][];
-		for(int i=0;i<rl.size();i++)
+		for(int i=0;i<rl.size();i++) {
 			changes[i] = new double[rl.size()];
-		for(int i=0;i<size;i++)
-			for(int j=i+1;j<rl.size();j++)
+		}
+		for(int i=0;i<size;i++) {
+			for(int j=i+1;j<rl.size();j++) {
 				changes[j][i] = changes[i][j] = ((cached_values[idx[i]] - c_mean) / (i+1) - (cached_values[idx[j]] - c_mean) / (j+1)) * (labels[idx[i]] - labels[idx[j]]) / denom;
+				System.out.println(changes[i][j]);
+				System.exit(2);
+			}
+		}
 		return changes;
 	}
 	
@@ -69,8 +75,8 @@ public class WeightedCorrelationScorer extends MetricScorer {
 		double sum = 0.0;
 		double weight_sum = 0.0;
 		for(int i=0; i<cached.length; i++) {
-			weight_sum += (1 / (i+1));
-			sum += (cached[idx[i]]-c_mean) * (labels[idx[i]] - l_mean) * (1 / (i+1));
+			weight_sum += (1.0 / (i+1));
+			sum += ((cached[idx[i]]-c_mean) * (labels[idx[i]] - l_mean) * (1.0 / (i+1)));
 		}
 		return sum / (weight_sum * Math.sqrt(c_variance * l_variance));
 	}
