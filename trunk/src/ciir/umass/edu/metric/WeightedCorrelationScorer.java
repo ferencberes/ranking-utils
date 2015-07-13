@@ -23,13 +23,9 @@ public class WeightedCorrelationScorer extends MetricScorer {
 	{
 		
 		k = rl.size();
-		// TODO: handle at k version of correlation!!!
 		
 		double[] labels = getLabels(rl);
 		double[] cached_values = getCachedValues(rl);
-//		System.out.println(labels.toString());
-//		System.exit(2);
-		
 		return getWeightedCorrelation(cached_values, getWeightedStatsAndSortedIndex(cached_values), labels, getWeightedStatsAndSortedIndex(labels));
 	}	
 	
@@ -41,8 +37,6 @@ public class WeightedCorrelationScorer extends MetricScorer {
 	public double[][] swapChange(RankList rl)
 	{
 		int size = rl.size();
-		// TODO: handle at k version of correlation!!!
-		
 		double[] labels = getLabels(rl);
 		double[] cached_values = getCachedValues(rl);
 		StatStorer stats_for_cached = getWeightedStatsAndSortedIndex(cached_values);

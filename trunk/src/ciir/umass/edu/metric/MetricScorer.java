@@ -9,10 +9,8 @@
 
 package ciir.umass.edu.metric;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
+
 import java.util.List;
-import java.util.Map;
 
 import ciir.umass.edu.learning.RankList;
 import ciir.umass.edu.utilities.Sorter;
@@ -142,35 +140,6 @@ public class MetricScorer {
 			var_s += Math.pow(records[idx[i]]-mean, 2) * (1 / (i+1));
 		double w_variance = var_s / weight_sum;
 		return new StatStorer(idx, mean, w_variance);
-	}
-	
-	protected double[][] getExpandedLists(long[] cached_ids, long[] label_ids, Map<Long, Double> cached_values, Map<Long, Double> label_values) {
-		ArrayList<Double> list_a = new ArrayList<Double>();
-		ArrayList<Double> list_b = new ArrayList<Double>();
-		for(int i=0; i<label_ids.length; i++) {
-			list_b.add(label_values.get(label_ids[i]));
-			if(cached_values.containsKey(label_ids[i])) {
-				list_a.add(cached_values.get(label_ids[i]));
-			} else {
-				list_a.add(0.0); // TODO: how to handle ties!!! especially for rank correlation!!!
-			}	
-		}
-		for(int i=0; i<cached_ids.length; i++) {
-			if(!label_values.containsKey(cached_ids[i])) {
-				list_a.add(cached_values.get(cached_ids[i]));
-				list_b.add(0.0); // TODO: how to handle ties!!! especially for rank correlation!!!
-			}
-		}
-		double[][] out = new double[2][];
-		double[] full_cached = new double[list_a.size()];
-		double[] full_label = new double[list_b.size()];
-		for(int i=0; i<list_a.size(); i++) {
-			full_cached[i] = list_a.get(i);
-			full_label[i] = list_b.get(i);
-		}
-		out[0] = full_cached;
-		out[1] = full_label;
-		return out;		
 	}
 	
 	// NOTE: for correlation scorers
