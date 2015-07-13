@@ -59,14 +59,20 @@ if __name__ == "__main__":
 		lin_feature_lists = generate_feature_vectors(item_num, lin_generated)
 		sq_feature_lists = generate_feature_vectors(item_num, sq_generated)
 
-		ig.write_to_file(output_prefix+'lin_gen.data', ranked_list, lin_feature_lists)
-		ig.write_to_file(output_prefix+'sq_gen.data', ranked_list, sq_feature_lists)
+		label_map = {}
+		lin_feature_map = {}
+		sq_feature_map = {}
+		for i in range(0,len(ranked_list)):
+			label_map[i]=i
+			lin_feature_map[i] = lin_feature_lists[i]
+			sq_feature_map[i] = sq_feature_lists[i]
 
-		print lin_generated
-		print lin_feature_lists
-		print
-		print sq_generated
-		print sq_feature_lists
+		f1 = open(output_prefix+'lin_gen.data', 'w')
+		ig.write_to_file(f1, label_map, lin_feature_map, 1)
+		f1.close()
+		f2 = open(output_prefix+'sq_gen.data', 'w')
+		ig.write_to_file(f2, label_map, sq_feature_map, 1)
+		f2.close()
 
 	else:
 		print 'Usage: <item_num> <feature_num> <output_prefix>'

@@ -58,24 +58,6 @@ def extract_feature_list(expanded_day_lists):
 			feature_list[record].append(expanded_day_lists[i][record])
 	return current, feature_list
 
-################### writers ##########################
-def write_record(record_id, record_features):
-	l = len(record_features)
-	out = str(record_id) + ' qid:1'
-	for i in range(l):
-		out += (' ' + str(i+1) + ':' + str(record_features[i]))
-	return (out + '\n')
-
-def write_to_file(file_path, label_dict, feature_dicts):
-	f = open(file_path, 'w')
-	l = len(label_dict)
-	order = range(l)
-	#rnd.shuffle(order) # this way learning to rank cannot use order of labels # random ordering switched off!!!
-	key_list = label_dict.keys()
-	for i in order:
-		f.write(write_record(label_dict[key_list[i]], feature_lists[key_list[i]]))
-	f.close()
-
 ##################### pre-processors ###########################
 def pre_proc(input_folder ,day, top_cut, is_label, label_rank_type, feature_rank_type):
     # input files (e.g.: *.txt_s) are ordered according to centrality scores
@@ -128,49 +110,89 @@ def centrality_to_position(ret_val, ret_sort):
             summed_rank = 0.0
     return ret_pos_val
 
+################### writers ##########################
+def write_record(record_id, label, record_features, query_id):
+	l = len(record_features)
+	out = str(label) + ' qid:' + str(query_id)
+	for i in range(l):
+		out += (' ' + str(i+1) + ':' + str(record_features[i]))
+	return (out + ' # ' + str(record_id) + '\n')
+
+def write_to_file(f, label_dict, feature_dicts, query_id):
+	l = len(label_dict)
+	order = range(l)
+	#rnd.shuffle(order) # this way learning to rank cannot use order of labels # random ordering switched off!!!
+	key_list = label_dict.keys()
+	for i in order:
+		f.write(write_record(key_list[i], label_dict[key_list[i]], feature_dicts[key_list[i]], query_id))
+
 ##################### main ############################
+
+def set_rankers(feature_rank_type, label_rank_type):
+	label_ranker = ''
+	if label_rank_type == 'binary':
+		label_ranker = set_zero
+	elif label_rank_type == 'position':
+		label_ranker = average_tie
+	elif label_rank_type == 'centrality':
+		label_ranker = set_zero #min_val_tie
+	else:
+		print 'ERROR: ' + rank_type + ' ranking is not implemented! Choose from "centrality/position/binary".'
+
+	feature_ranker = ''
+	if feature_rank_type == 'binary':
+		feature_ranker = set_zero
+	elif feature_rank_type == 'position':
+		feature_ranker = average_tie
+	elif feature_rank_type == 'centrality':
+		feature_ranker = set_zero #min_val_tie
+	else:
+		print 'ERROR: ' + rank_type + ' ranking is not implemented! Choose from "centrality/position/binary".'
+	return feature_ranker, label_ranker
+
+def extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, query_id, out_file):
+	day_lists = []
+	for i in reversed(range(from_interval_id, to_interval_id+1)):
+		day_lists.append(pre_proc(data_folder,i, top_cut, (i==to_interval_id), label_rank_type, feature_rank_type))
+	#print day_lists
+	expanded_data = expand_data(day_lists, label_ranker, feature_ranker)
+	#print expanded_data
+	label_list, feature_lists = extract_feature_list(expanded_data)
+	#print label_list
+	#print feature_lists
+	write_to_file(out_file, label_list, feature_lists, query_id)
+
 if __name__ == "__main__":
-	if len(sys.argv) == 8:
+	if len(sys.argv) == 10:
 		data_folder = sys.argv[1]
 		feature_rank_type = sys.argv[2] # centrality/position/binary
 		label_rank_type = sys.argv[3] # centrality/position/binary
 		top_cut = int(sys.argv[4]) # default 10, all: -1
-		from_interval_id = int(sys.argv[5])
-		to_interval_id = int(sys.argv[6]) # this interval is the target
-		output = sys.argv[7]
-
-		day_lists = []
-		for i in reversed(range(from_interval_id, to_interval_id+1)):
-			day_lists.append(pre_proc(data_folder,i, top_cut, (i==to_interval_id), label_rank_type, feature_rank_type))
-		#print day_lists
+		num_of_queries = int(sys.argv[5])
+		num_of_features = int(sys.argv[6]) # this interval is the target
+		test_interval_id = int(sys.argv[7])
+		output_folder = sys.argv[8]
+		file_prefix = sys.argv[9]
+		feature_ranker, label_ranker = set_rankers(feature_rank_type, label_rank_type)
 		
-		label_ranker = ''
-		if label_rank_type == 'binary':
-			label_ranker = set_zero
-		elif label_rank_type == 'position':
-			label_ranker = average_tie
-		elif label_rank_type == 'centrality':
-			label_ranker = set_zero #min_val_tie
-		else:
-			print 'ERROR: ' + rank_type + ' ranking is not implemented! Choose from "centrality/position/binary".'
+		if not os.path.exists(output_folder):
+					os.makedirs(output_folder)
 
-		feature_ranker = ''
-		if feature_rank_type == 'binary':
-			feature_ranker = set_zero
-		elif feature_rank_type == 'position':
-			feature_ranker = average_tie
-		elif feature_rank_type == 'centrality':
-			feature_ranker = set_zero #min_val_tie
-		else:
-			print 'ERROR: ' + rank_type + ' ranking is not implemented! Choose from "centrality/position/binary".'
-		
-		expanded_data = expand_data(day_lists, label_ranker, feature_ranker)
-		#print expanded_data
-		label_list, feature_lists = extract_feature_list(expanded_data)
-		#print label_list
-		#print feature_lists
+		# extract test data
+		to_interval_id = test_interval_id
+		from_interval_id = test_interval_id - num_of_features
+		query_id = 1
+		f_test = open(output_folder + '/' + file_prefix + ".test", 'w')
+		extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, query_id, f_test)
+		f_test.close()
 
-		write_to_file(output, label_list, feature_lists)
+		# extract train data
+		f_train = open(output_folder + '/' + file_prefix + ".train", 'w')
+		for i in range(1,num_of_queries + 1):
+			to_interval_id = test_interval_id - i
+			from_interval_id = to_interval_id - num_of_features
+			extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, i, f_train)
+		f_train.close()
 
 	else:
-		print 'Usage: <data_folder> <feature_rank_type> <label_rank_type> <top_k/-1> <from> <to> <output>'
+		print 'Usage: <data_folder> <feature_rank_type> <label_rank_type> <top_k/-1> <num_of_queries> <num_of_features> <test_interval_id> <output_folder> <file_prefix>'
