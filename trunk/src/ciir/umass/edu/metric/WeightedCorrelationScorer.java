@@ -23,12 +23,6 @@ public class WeightedCorrelationScorer extends MetricScorer {
 	{
 		
 		k = rl.size();
-//		if(rl.size() == 0)
-//			return 0;
-//
-//		int l_size = k;
-//		if(k > rl.size() || k <= 0)
-//			l_size = rl.size();
 		// TODO: handle at k version of correlation!!!
 		
 		double[] labels = getLabels(rl);
@@ -36,7 +30,7 @@ public class WeightedCorrelationScorer extends MetricScorer {
 //		System.out.println(labels.toString());
 //		System.exit(2);
 		
-		return getWeightedCorrelation(cached_values, getWeightedStatsAndOrigiList(cached_values), labels, getWeightedStatsAndOrigiList(labels));
+		return getWeightedCorrelation(cached_values, getWeightedStatsAndSortedIndex(cached_values), labels, getWeightedStatsAndSortedIndex(labels));
 	}	
 	
 	public String name()
@@ -48,12 +42,11 @@ public class WeightedCorrelationScorer extends MetricScorer {
 	{
 		int size = rl.size();
 		// TODO: handle at k version of correlation!!!
-//		int size = (rl.size() > k) ? k : rl.size();
 		
 		double[] labels = getLabels(rl);
 		double[] cached_values = getCachedValues(rl);
-		StatStorer stats_for_cached = getWeightedStatsAndOrigiList(cached_values);
-		StatStorer stats_for_labels = getWeightedStatsAndOrigiList(labels);
+		StatStorer stats_for_cached = getWeightedStatsAndSortedIndex(cached_values);
+		StatStorer stats_for_labels = getWeightedStatsAndSortedIndex(labels);
 		double c_mean = stats_for_cached.getMean();
 		double c_variance = stats_for_cached.getVariance();
 		double l_variance = stats_for_labels.getVariance();
