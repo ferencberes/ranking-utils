@@ -11,5 +11,5 @@ ant
 popd
 
 # run pytests
-../run_pytests.sh
+#../run_pytests.sh
 popd
