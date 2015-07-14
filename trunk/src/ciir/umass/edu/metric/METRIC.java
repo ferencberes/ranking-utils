@@ -10,5 +10,5 @@
 package ciir.umass.edu.metric;
 
 public enum METRIC {
-	MAP, NDCG, DCG, Precision, Reciprocal, Best, ERR, CORREL, W_CORREL
+	MAP, NDCG, DCG, Precision, Reciprocal, Best, ERR, CORREL, W_CORREL, RANKCORREL, W_RANKCORREL
 }

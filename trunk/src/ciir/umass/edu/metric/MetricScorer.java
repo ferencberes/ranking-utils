@@ -105,10 +105,11 @@ public class MetricScorer {
 	}
 	
 	// NOTE: for correlation scorers
-	protected StatStorer getStatsAndSortedIndex(double[] records)
+	protected StatStorer getStatsAndSortedIndex(double[] records, boolean is_ascending)
 	{
 		int size = records.length;
-		int[] idx = Sorter.sort(records, false);
+		// is_ascending = false for centrality rank, is_ascending = true for position rank!
+		int[] idx = Sorter.sort(records, is_ascending);
 		
 		double sum = 0.0;
 		for(int i=0;i<size;i++) {
@@ -123,10 +124,10 @@ public class MetricScorer {
 	}
 	
 	// NOTE: for correlation scorers
-	protected StatStorer getWeightedStatsAndSortedIndex(double[] records)
+	protected StatStorer getWeightedStatsAndSortedIndex(double[] records, boolean is_ascending)
 	{
 		int size = records.length;
-		int[] idx = Sorter.sort(records, false);
+		int[] idx = Sorter.sort(records, is_ascending);
 		
 		double sum = 0.0;
 		double weight_sum = 0.0;
@@ -165,6 +166,28 @@ public class MetricScorer {
 		}
 	}
 	
+	// NOTE: for correlation scorers
+	protected double[] convertCentralityToRank(double[] vals, int[] idx) {
+		int l_size = vals.length;
+		double[] out = new double[l_size];
+		double partial_summed_rank = 0.0;
+		int i = 0;
+		for(int j=1; j<l_size+1; j++) {
+			partial_summed_rank += j;
+			if(j==l_size || vals[idx[j-1]] > vals[idx[j]]) {
+				for(int k=i; k<j; k++) {
+					out[idx[k]] = partial_summed_rank / (j-i);
+				}
+				i = j;
+				partial_summed_rank = 0.0;
+			}
+		}
+//		System.out.println(printVector(vals));
+//		System.out.println(printVector(out));
+		return out;
+	}
+	
+	// NOTE: for correlation scorers
 	protected String printVector(double[] vec) {
 		String out = "";
 		for(int i=0; i<vec.length; i++) {

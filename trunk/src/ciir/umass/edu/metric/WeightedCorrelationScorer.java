@@ -24,7 +24,7 @@ public class WeightedCorrelationScorer extends MetricScorer {
 		k = rl.size();	
 		double[] labels = getLabels(rl);
 		double[] cached_values = getCachedValues(rl);
-		return getWeightedCorrelation(cached_values, getWeightedStatsAndSortedIndex(cached_values), labels, getWeightedStatsAndSortedIndex(labels));
+		return getWeightedCorrelation(cached_values, getWeightedStatsAndSortedIndex(cached_values, false), labels, getWeightedStatsAndSortedIndex(labels, false));
 	}	
 	
 	public String name()
@@ -37,8 +37,13 @@ public class WeightedCorrelationScorer extends MetricScorer {
 		int size = rl.size();
 		double[] labels = getLabels(rl);
 		double[] cached_values = getCachedValues(rl);
-		StatStorer stats_for_cached = getWeightedStatsAndSortedIndex(cached_values);
-		StatStorer stats_for_labels = getWeightedStatsAndSortedIndex(labels);
+		return swapChangeCalculator(cached_values, labels, size, false);
+	}
+		
+	public double[][] swapChangeCalculator(double[] cached_values, double[] labels, int size, boolean is_ascending)
+	{	
+		StatStorer stats_for_cached = getWeightedStatsAndSortedIndex(cached_values, is_ascending);
+		StatStorer stats_for_labels = getWeightedStatsAndSortedIndex(labels, is_ascending);
 		double c_mean = stats_for_cached.getMean();
 		double c_variance = stats_for_cached.getVariance();
 		double l_variance = stats_for_labels.getVariance();
@@ -52,12 +57,12 @@ public class WeightedCorrelationScorer extends MetricScorer {
 		System.out.println(printVector(labels));
 		System.out.println(printVector(cached_values));
 		
-		double[][] changes = new double[rl.size()][];
-		for(int i=0;i<rl.size();i++) {
-			changes[i] = new double[rl.size()];
+		double[][] changes = new double[size][];
+		for(int i=0;i<size;i++) {
+			changes[i] = new double[size];
 		}
 		for(int i=0;i<size;i++) {
-			for(int j=i+1;j<rl.size();j++) {
+			for(int j=i+1;j<size;j++) {
 				changes[j][i] = changes[i][j] = ((cached_values[idx[i]] - c_mean) / (i+1) - (cached_values[idx[j]] - c_mean) / (j+1)) * (labels[idx[i]] - labels[idx[j]]) / denom;
 				System.out.println(changes[i][j]);
 				System.exit(2);
@@ -66,7 +71,7 @@ public class WeightedCorrelationScorer extends MetricScorer {
 		return changes;
 	}
 	
-	private double getWeightedCorrelation(double[] cached, StatStorer stats_for_cached, double[] labels, StatStorer stats_for_labels) {
+	protected double getWeightedCorrelation(double[] cached, StatStorer stats_for_cached, double[] labels, StatStorer stats_for_labels) {
 		double c_mean = stats_for_cached.getMean();
 		double c_variance = stats_for_cached.getVariance();
 		int[] idx = stats_for_labels.getSorted_idx();

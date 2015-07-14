@@ -1,6 +1,8 @@
 package ciir.umass.edu.metric;
 
 import ciir.umass.edu.learning.RankList;
+import ciir.umass.edu.metric.MetricScorer.StatStorer;
+import ciir.umass.edu.utilities.Sorter;
 
 public class CorrelationScorer extends MetricScorer {
 
@@ -24,7 +26,7 @@ public class CorrelationScorer extends MetricScorer {
 		k = rl.size();
 		double[] labels = getLabels(rl);
 		double[] cached_values = getCachedValues(rl);
-		return getCorrelation(cached_values, getStatsAndSortedIndex(cached_values), labels, getStatsAndSortedIndex(labels));
+		return getCorrelation(cached_values, getStatsAndSortedIndex(cached_values, false), labels, getStatsAndSortedIndex(labels, false));
 	}	
 	
 	public String name()
@@ -35,11 +37,15 @@ public class CorrelationScorer extends MetricScorer {
 	public double[][] swapChange(RankList rl)
 	{
 		int size = rl.size();
-		
 		double[] labels = getLabels(rl);
 		double[] cached_values = getCachedValues(rl);
-		StatStorer stats_for_cached = getStatsAndSortedIndex(cached_values);
-		StatStorer stats_for_labels = getStatsAndSortedIndex(labels);
+		return swapChangeCalculator(cached_values, labels, size, false);
+	}
+	
+	public double[][] swapChangeCalculator(double[] cached_values, double[] labels, int size, boolean is_ascending)
+	{	
+		StatStorer stats_for_cached = getStatsAndSortedIndex(cached_values, is_ascending);
+		StatStorer stats_for_labels = getStatsAndSortedIndex(labels, is_ascending);
 		double c_variance = stats_for_cached.getVariance();
 		double l_variance = stats_for_labels.getVariance();
 		double denom = size * Math.sqrt(c_variance * l_variance);
@@ -47,12 +53,12 @@ public class CorrelationScorer extends MetricScorer {
 		System.out.println(printVector(labels));
 		System.out.println(printVector(cached_values));
 		
-		double[][] changes = new double[rl.size()][];
-		for(int i=0;i<rl.size();i++) {
-			changes[i] = new double[rl.size()];
+		double[][] changes = new double[size][];
+		for(int i=0;i<size;i++) {
+			changes[i] = new double[size];
 		}
 		for(int i=0;i<size;i++) {
-			for(int j=i+1;j<rl.size();j++) {
+			for(int j=i+1;j<size;j++) {
 				changes[j][i] = changes[i][j] = ((cached_values[i] - cached_values[j]) * (labels[i] - labels[j])) / denom;
 				System.out.println((cached_values[i] - cached_values[j]));
 				System.out.println((labels[i] - labels[j]));
@@ -63,7 +69,7 @@ public class CorrelationScorer extends MetricScorer {
 		return changes;
 	}
 	
-	private double getCorrelation(double[] cached, StatStorer stats_for_cached, double[] labels, StatStorer stats_for_labels) {
+	protected double getCorrelation(double[] cached, StatStorer stats_for_cached, double[] labels, StatStorer stats_for_labels) {
 		double c_mean = stats_for_cached.getMean();
 		double c_variance = stats_for_cached.getVariance();
 		double l_mean = stats_for_labels.getMean();
