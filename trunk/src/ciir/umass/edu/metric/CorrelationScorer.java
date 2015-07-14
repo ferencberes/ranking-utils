@@ -1,10 +1,12 @@
 package ciir.umass.edu.metric;
 
+import java.util.Random;
+
 import ciir.umass.edu.learning.RankList;
-import ciir.umass.edu.metric.MetricScorer.StatStorer;
-import ciir.umass.edu.utilities.Sorter;
 
 public class CorrelationScorer extends MetricScorer {
+	
+	private Random gen = new Random();
 
 	public CorrelationScorer()
 	{
@@ -49,8 +51,9 @@ public class CorrelationScorer extends MetricScorer {
 		double c_variance = stats_for_cached.getVariance();
 		double l_variance = stats_for_labels.getVariance();
 		double denom = size * Math.sqrt(c_variance * l_variance);
+		//System.out.println("denom:");
 		//System.out.println(denom);
-		System.out.println(printVector(labels));
+		//System.out.println(printVector(labels));
 		System.out.println(printVector(cached_values));
 		
 		double[][] changes = new double[size][];
@@ -59,11 +62,18 @@ public class CorrelationScorer extends MetricScorer {
 		}
 		for(int i=0;i<size;i++) {
 			for(int j=i+1;j<size;j++) {
-				changes[j][i] = changes[i][j] = ((cached_values[i] - cached_values[j]) * (labels[i] - labels[j])) / denom;
-				System.out.println((cached_values[i] - cached_values[j]));
-				System.out.println((labels[i] - labels[j]));
-				System.out.println(changes[i][j]);
-				System.exit(2);
+				if(cached_values[i] == cached_values[j]) {
+					changes[j][i] = changes[i][j] = gen.nextFloat() * Math.pow(10, -5);
+				} else if(labels[i] == labels[j]) {
+					changes[j][i] = changes[i][j] = 0.0;
+				} else {	
+					changes[j][i] = changes[i][j] = ((cached_values[i] - cached_values[j]) * (labels[i] - labels[j])) / denom;
+				}
+				//System.out.println((cached_values[i] - cached_values[j] + 0.01));
+				//System.out.println((labels[i] - labels[j]));
+				//System.out.println("i,j:");
+				//System.out.println(changes[i][j]);
+				//System.exit(2);
 			}
 		}
 		return changes;

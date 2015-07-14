@@ -1,9 +1,13 @@
 package ciir.umass.edu.metric;
 
+import java.util.Random;
+
 import ciir.umass.edu.learning.RankList;
 
 public class WeightedCorrelationScorer extends MetricScorer {
 
+	private Random gen = new Random();
+	
 	public WeightedCorrelationScorer()
 	{
 		this.k = 10;
@@ -63,7 +67,14 @@ public class WeightedCorrelationScorer extends MetricScorer {
 		}
 		for(int i=0;i<size;i++) {
 			for(int j=i+1;j<size;j++) {
-				changes[j][i] = changes[i][j] = ((cached_values[idx[i]] - c_mean) / (i+1) - (cached_values[idx[j]] - c_mean) / (j+1)) * (labels[idx[i]] - labels[idx[j]]) / denom;
+				//changes[j][i] = changes[i][j] = ((cached_values[idx[i]] - c_mean) / (i+1) - (cached_values[idx[j]] - c_mean) / (j+1)) * (labels[idx[i]] - labels[idx[j]]) / denom;
+				if(cached_values[i] == cached_values[j]) {
+					changes[j][i] = changes[i][j] = gen.nextFloat() * Math.pow(10, -5);
+				} else if(labels[i] == labels[j]) {
+					changes[j][i] = changes[i][j] = 0.0;
+				} else {	
+					changes[j][i] = changes[i][j] = ((cached_values[idx[i]] - c_mean) / (i+1) - (cached_values[idx[j]] - c_mean) / (j+1)) * (labels[idx[i]] - labels[idx[j]]) / denom;
+				}
 				System.out.println(changes[i][j]);
 				System.exit(2);
 			}

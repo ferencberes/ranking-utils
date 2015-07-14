@@ -127,6 +127,10 @@ public class NDCGScorer extends DCGScorer {
 		int size = (rl.size() > k) ? k : rl.size();
 		//compute the ideal ndcg
 		int[] rel = getRelevanceLabels(rl);
+//		double[] cached = getCachedValues(rl);
+//		System.out.println(printVector(cached));
+//		System.exit(2);
+		
 		double ideal = 0;
 		Double d = idealGains.get(rl.getID());
 		if(d != null)
