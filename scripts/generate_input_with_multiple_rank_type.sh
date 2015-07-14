@@ -15,8 +15,7 @@ pushd "$thisDir"
 echo "Generating inputs STARTED."
 for label_rank_type in {"centrality","position","binary"}; do
 	for feature_rank_type in {"centrality","position"}; do
-		full_prefix="$file_prefix"_"$feature_rank_type"_"$label_rank_type"
-		python input_generator.py "$data_folder" "$feature_rank_type" "$label_rank_type" "$top_value" "$num_of_queries" "$num_of_features" "$test_interval_id" "$output_folder" "$full_prefix" 
+		python input_generator.py "$data_folder" "$feature_rank_type" "$label_rank_type" "$top_value" "$num_of_queries" "$num_of_features" "$test_interval_id" "$output_folder" "$file_prefix"_"$feature_rank_type"_"$label_rank_type"
 	done;
 done;
 echo "Generating inputs FINISHED."

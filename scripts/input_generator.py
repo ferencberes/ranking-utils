@@ -19,34 +19,59 @@ def min_val_tie(l, full_size):
 def average_tie(l,full_size):
 	deficit = full_size - len(l)
 	val = sum(range(len(l)+1, full_size+1))
-	return float(val) / deficit
+	out_val = 0.0
+	if deficit != 0:
+		out_val = float(val) / deficit
+	return out_val
 
 def set_zero(l,full_size):
 	return 0.0
 
 ################### rank processors ##################
-def extract_union(day_lists):
+def extract_unions(day_lists):
 	num_of_days = len(day_lists)
-	record_ids = {}
+	record_ids_all = {}
+	record_ids_except_label = {}
+	first = True
 	for l in day_lists:
 		for record in l:
-			record_ids[record] = 1
-	return record_ids.keys()
+			record_ids_all[record] = 1
+			if not first:
+				record_ids_except_label[record] = 1
+		first = False
+	return [record_ids_all.keys(), record_ids_except_label.keys()] 
 
-def expand_data(day_lists, label_rank_computer, feature_rank_computer):
-	record_union = extract_union(day_lists)
-	full_size = len(record_union)
+def expand_data(day_lists, label_rank_computer, feature_rank_computer, is_for_train):
+	[record_union_all, record_union_prev] = extract_unions(day_lists)
 	out = []
-	for i in range(len(day_lists)):
-		expanded_data = dict(day_lists[i]) # copy
-		if i == 0:
-			tie_rank = label_rank_computer(day_lists[i], full_size)
-		else:
-			tie_rank = feature_rank_computer(day_lists[i], full_size)
-		for record in record_union:
-			if record not in day_lists[i]:
-				expanded_data[record] = tie_rank
-		out.append(expanded_data)
+	if not is_for_train:
+		full_size = len(record_union_all)
+		for i in range(len(day_lists)):
+			expanded_data = dict(day_lists[i]) # copy
+			if i == 0:
+				tie_rank = label_rank_computer(day_lists[i], full_size)
+			else:
+				tie_rank = feature_rank_computer(day_lists[i], full_size)
+			for record in record_union_all:
+				if record not in day_lists[i]:
+					expanded_data[record] = tie_rank
+			out.append(expanded_data)
+	else:
+		full_size = len(record_union_prev)
+		for i in range(len(day_lists)):	
+			if i == 0:
+				expanded_data = {}
+				for v_id in day_lists[0]:
+					if v_id in record_union_prev:
+						expanded_data[v_id] = day_lists[0][v_id]
+				tie_rank = label_rank_computer(expanded_data, full_size)
+			else:
+				expanded_data = dict(day_lists[i]) # copy
+				tie_rank = feature_rank_computer(day_lists[i], full_size)
+			for record in record_union_prev:
+				if record not in day_lists[i]:
+					expanded_data[record] = tie_rank
+			out.append(expanded_data)
 	return out
 
 def extract_feature_list(expanded_day_lists):
@@ -150,12 +175,12 @@ def set_rankers(feature_rank_type, label_rank_type):
 		print 'ERROR: ' + rank_type + ' ranking is not implemented! Choose from "centrality/position/binary".'
 	return feature_ranker, label_ranker
 
-def extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, query_id, out_file):
+def extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, query_id, out_file, is_for_train):
 	day_lists = []
 	for i in reversed(range(from_interval_id, to_interval_id+1)):
 		day_lists.append(pre_proc(data_folder,i, top_cut, (i==to_interval_id), label_rank_type, feature_rank_type))
 	#print day_lists
-	expanded_data = expand_data(day_lists, label_ranker, feature_ranker)
+	expanded_data = expand_data(day_lists, label_ranker, feature_ranker, is_for_train)
 	#print expanded_data
 	label_list, feature_lists = extract_feature_list(expanded_data)
 	#print label_list
@@ -183,7 +208,7 @@ if __name__ == "__main__":
 		from_interval_id = test_interval_id - num_of_features
 		query_id = 1
 		f_test = open(output_folder + '/' + file_prefix + ".test", 'w')
-		extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, query_id, f_test)
+		extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, query_id, f_test, False)
 		f_test.close()
 
 		# extract train data
@@ -191,7 +216,7 @@ if __name__ == "__main__":
 		for i in range(1,num_of_queries + 1):
 			to_interval_id = test_interval_id - i
 			from_interval_id = to_interval_id - num_of_features
-			extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, i, f_train)
+			extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, i, f_train, True)
 		f_train.close()
 
 	else:

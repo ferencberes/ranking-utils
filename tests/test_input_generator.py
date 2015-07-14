@@ -12,14 +12,21 @@ day_m1 = {2:0.6, 4:0.35, 1:0.31, 5:0.11}
 day_m2 = {4:0.65, 2:0.44, 5:0.25, 1:0.11, 6:0.05}
 day_lists = [day_curr, day_m1, day_m2]
 
-def test_extract_union():
-	record_union = ig.extract_union(day_lists)
-	assert len(record_union) == 6
+def test_extract_unions():
+	[record_union_all, record_union_prev] = ig.extract_unions(day_lists)
+	assert len(record_union_all) == 6
 	for i in range(1,7):
-		assert True == (i in record_union)
+		assert True == (i in record_union_all)
+
+	assert len(record_union_prev) == 5
+	for i in range(1,7):
+		if i == 3:
+			assert False == (i in record_union_prev)
+		else:
+			assert True == (i in record_union_prev)
 
 def test_expand_data_minval():
-	res = ig.expand_data(day_lists, ig.min_val_tie, ig.min_val_tie)
+	res = ig.expand_data(day_lists, ig.min_val_tie, ig.min_val_tie, False)
 	# check size
 	for l in res:
 		assert 6 == len(l)
@@ -30,8 +37,13 @@ def test_expand_data_minval():
 	assert abs(res[1][6] + 0.89) < epsilon
 	assert abs(res[2][3] + 0.95) < epsilon
 
+def test_expand_data_minval_for_train():
+	res = ig.expand_data(day_lists, ig.min_val_tie, ig.min_val_tie, True)
+	assert False == (3 in res[1])
+	assert False == (3 in res[2])
+
 def test_expand_data_avg():
-	res = ig.expand_data(day_lists, ig.average_tie, ig.average_tie)
+	res = ig.expand_data(day_lists, ig.average_tie, ig.average_tie, False)
 	# check size
 	for l in res:
 		assert 6 == len(l)
@@ -42,8 +54,20 @@ def test_expand_data_avg():
 	assert abs(res[1][6] - 5.5) < epsilon
 	assert abs(res[2][3] - 6) < epsilon
 
+def test_expand_data_avg_for_train():
+	res = ig.expand_data(day_lists, ig.average_tie, ig.average_tie, True)
+	# check size
+	for l in res:
+		assert 5 == len(l)
+	# check appended values
+	assert abs(res[0][5] - 4.5) < epsilon
+	assert abs(res[0][6] - 4.5) < epsilon
+	assert False == (3 in res[1])
+	assert abs(res[1][6] - 5.0) < epsilon
+	assert False == (3 in res[2])
+
 def test_extract_feature_list():
-	res = ig.expand_data(day_lists, ig.min_val_tie, ig.min_val_tie)
+	res = ig.expand_data(day_lists, ig.min_val_tie, ig.min_val_tie, False)
 	label_list, feature_list = ig.extract_feature_list(res)
 	# check size
 	for i in feature_list:
