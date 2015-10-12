@@ -24,8 +24,9 @@ if __name__ == "__main__":
 		# tudjuk hogy nincs ures nap a tanitasban. Erre nem kell kulon figyelni
 		ranklib_results_dir = sys.argv[1]
 		dataset_prefix = sys.argv[2]
-		rank_type_prefix = sys.argv[3]
-		metric_prefix = sys.argv[4]
+		feature_rank_type = sys.argv[3]
+		label_rank_type = sys.argv[4]
+		metric_t = sys.argv[5]
 		from_interval = int(sys.argv[5])
 		to_interval = int(sys.argv[6])
 		output_file = sys.argv[7]
@@ -33,11 +34,11 @@ if __name__ == "__main__":
 
 		print "Collecting ranklib results STARTED."
 		for i in range(from_interval, to_interval+1):
-			interval_file = ranklib_results_dir + "/" + str(i) + "/" + dataset_prefix + "_" + str(i) + "_" + rank_type_prefix + "_" + metric_prefix + ".out"
+			interval_file = ranklib_results_dir + "/" + str(i) + "/" + dataset_prefix + "_" + str(i) + "_" + rank_type_prefix + "_" + metric_t_prefix + ".out"
 			out_list = [str(i)] + extract_result_of_learning(interval_file)
 			write_out(out_f, out_list)
 		out_f.close()
 		print "Collecting ranklib results FINISHED."
 	else:
-		print "Usage: <ranklib_results_dir> <dataset_prefix> <rank_type_prefix> <metric_prefix> <from_interval> <to_interval> <output_file>"
+		print "Usage: <ranklib_results_dir> <dataset_prefix> <feature_rank_type> <label_rank_type> <metric_t> <metric_T> <from_interval> <to_interval> <output_file>"
 

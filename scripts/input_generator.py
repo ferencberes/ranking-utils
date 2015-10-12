@@ -188,36 +188,39 @@ def extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_typ
 	write_to_file(out_file, label_list, feature_lists, query_id)
 
 if __name__ == "__main__":
-	if len(sys.argv) == 10:
+	if len(sys.argv) == 11:
 		data_folder = sys.argv[1]
 		feature_rank_type = sys.argv[2] # centrality/position/binary
 		label_rank_type = sys.argv[3] # centrality/position/binary
 		top_cut = int(sys.argv[4]) # default 10, all: -1
-		num_of_queries = int(sys.argv[5])
-		num_of_features = int(sys.argv[6]) # this interval is the target
-		test_interval_id = int(sys.argv[7])
-		output_folder = sys.argv[8]
-		file_prefix = sys.argv[9]
+		train_query_num = int(sys.argv[5])
+		test_query_num = int(sys.argv[6])
+		num_of_features = int(sys.argv[7]) # this interval is the target
+		test_interval_id = int(sys.argv[8])
+		output_folder = sys.argv[9]
+		file_prefix = sys.argv[10]
 		feature_ranker, label_ranker = set_rankers(feature_rank_type, label_rank_type)
 		
 		if not os.path.exists(output_folder):
 					os.makedirs(output_folder)
 
 		# extract test data
-		to_interval_id = test_interval_id
-		from_interval_id = test_interval_id - num_of_features
-		query_id = 1
 		f_test = open(output_folder + '/' + file_prefix + ".test", 'w')
-		extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, query_id, f_test, False)
+		for i in range(0,test_query_num):	
+			to_interval_id = test_interval_id + i
+			from_interval_id = to_interval_id - num_of_features
+			extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, i+1, f_test, False)
 		f_test.close()
 
 		# extract train data
 		f_train = open(output_folder + '/' + file_prefix + ".train", 'w')
-		for i in range(1,num_of_queries + 1):
+		for i in range(1,train_query_num + 1):
 			to_interval_id = test_interval_id - i
 			from_interval_id = to_interval_id - num_of_features
 			extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, i, f_train, True)
 		f_train.close()
 
 	else:
-		print 'Usage: <data_folder> <feature_rank_type> <label_rank_type> <top_k/-1> <num_of_queries> <num_of_features> <test_interval_id> <output_folder> <file_prefix>'
+		print 'Usage: <data_folder> <feature_rank_type> <label_rank_type> <top_k/-1> <train_query_num> <test_query_num> <num_of_features> <test_interval_id> <output_folder> <file_prefix>'
+
+		
