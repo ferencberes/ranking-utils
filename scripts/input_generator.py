@@ -187,16 +187,19 @@ def extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_typ
 	#print feature_lists
 	write_to_file(out_file, label_list, feature_lists, query_id)
 
+def name_generator(file_prefix, top_k, num_of_features, train_query_num, test_query_num):
+	return (file_prefix + '_k' + str(top_k) + '_f' + str(num_of_features) + '_tr' + str(train_query_num) + "_te" + str(test_query_num))
+
 if __name__ == "__main__":
 	if len(sys.argv) == 11:
 		data_folder = sys.argv[1]
 		feature_rank_type = sys.argv[2] # centrality/position/binary
 		label_rank_type = sys.argv[3] # centrality/position/binary
 		top_cut = int(sys.argv[4]) # default 10, all: -1
-		train_query_num = int(sys.argv[5])
-		test_query_num = int(sys.argv[6])
-		num_of_features = int(sys.argv[7]) # this interval is the target
-		test_interval_id = int(sys.argv[8])
+		num_of_features = int(sys.argv[5])
+		train_query_num = int(sys.argv[6])
+		test_query_num = int(sys.argv[7])
+		test_interval_id = int(sys.argv[8]) # this interval is the target
 		output_folder = sys.argv[9]
 		file_prefix = sys.argv[10]
 		feature_ranker, label_ranker = set_rankers(feature_rank_type, label_rank_type)
@@ -205,7 +208,7 @@ if __name__ == "__main__":
 					os.makedirs(output_folder)
 
 		# extract test data
-		f_test = open(output_folder + '/' + file_prefix + ".test", 'w')
+		f_test = open(output_folder + '/' + name_generator(file_prefix, top_cut, num_of_features, train_query_num, test_query_num) + ".test", 'w')
 		for i in range(0,test_query_num):	
 			to_interval_id = test_interval_id + i
 			from_interval_id = to_interval_id - num_of_features
@@ -213,7 +216,7 @@ if __name__ == "__main__":
 		f_test.close()
 
 		# extract train data
-		f_train = open(output_folder + '/' + file_prefix + ".train", 'w')
+		f_train = open(output_folder + '/' + name_generator(file_prefix, top_cut, num_of_features, train_query_num, test_query_num) + ".train", 'w')
 		for i in range(1,train_query_num + 1):
 			to_interval_id = test_interval_id - i
 			from_interval_id = to_interval_id - num_of_features
@@ -221,6 +224,6 @@ if __name__ == "__main__":
 		f_train.close()
 
 	else:
-		print 'Usage: <data_folder> <feature_rank_type> <label_rank_type> <top_k/-1> <train_query_num> <test_query_num> <num_of_features> <test_interval_id> <output_folder> <file_prefix>'
+		print 'Usage: <data_folder> <feature_rank_type> <label_rank_type> <top_k/-1> <num_of_features> <train_query_num> <test_query_num> <test_interval_id> <output_folder> <file_prefix>'
 
 		

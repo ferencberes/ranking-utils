@@ -31,9 +31,9 @@ def test_expand_data_minval():
 	for l in res:
 		assert 6 == len(l)
 	# check appended values
-	assert abs(res[0][5] + 0.79) < epsilon
+	assert abs(res[0][5] + 0.79) < epsilon # 0.21 - 1 = -0.79
 	assert abs(res[0][6] + 0.79) < epsilon
-	assert abs(res[1][3] + 0.89) < epsilon
+	assert abs(res[1][3] + 0.89) < epsilon # 0.11 - 1 = -0.89
 	assert abs(res[1][6] + 0.89) < epsilon
 	assert abs(res[2][3] + 0.95) < epsilon
 
@@ -48,11 +48,11 @@ def test_expand_data_avg():
 	for l in res:
 		assert 6 == len(l)
 	# check appended values
-	assert abs(res[0][5] - 5.5) < epsilon
+	assert abs(res[0][5] - 5.5) < epsilon # (5 + 6) / 2 = 5.5
 	assert abs(res[0][6] - 5.5) < epsilon
 	assert abs(res[1][3] - 5.5) < epsilon
 	assert abs(res[1][6] - 5.5) < epsilon
-	assert abs(res[2][3] - 6) < epsilon
+	assert abs(res[2][3] - 6) < epsilon # 6 / 1 = 6
 
 def test_expand_data_avg_for_train():
 	res = ig.expand_data(day_lists, ig.average_tie, ig.average_tie, True)
@@ -80,7 +80,7 @@ def test_extract_feature_list():
 	assert label_list[5] == -0.79
 	assert label_list[6] == -0.79
 	# check features  
-	assert feature_list[1][0] == 0.31
+	assert feature_list[1][0] == 0.31 # node '1' has score 0.31 on previous day and 0.11 on the day before the previous day
 	assert feature_list[1][1] == 0.11
 	assert feature_list[2][0] == 0.6
 	assert feature_list[2][1] == 0.44
