@@ -10,7 +10,7 @@ epsilon = 0.0001
 day_curr = {1:0.5, 2:0.4, 3:0.35, 4:0.21}
 day_m1 = {2:0.6, 4:0.35, 1:0.31, 5:0.11}
 day_m2 = {4:0.65, 2:0.44, 5:0.25, 1:0.11, 6:0.05}
-day_lists = [day_curr, day_m1, day_m2]
+day_lists = [day_curr, day_m1, day_m2] #days are numbered backwards! m2 : minus 2
 
 def test_extract_unions():
 	[record_union_all, record_union_prev] = ig.extract_unions(day_lists)

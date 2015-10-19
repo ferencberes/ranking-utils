@@ -37,26 +37,26 @@ def extract_unions(day_lists):
 		for record in l:
 			record_ids_all[record] = 1
 			if not first:
-				record_ids_except_label[record] = 1
+				record_ids_except_label[record] = 1 # contains records that occurred in feature days as well!
 		first = False
 	return [record_ids_all.keys(), record_ids_except_label.keys()] 
 
 def expand_data(day_lists, label_rank_computer, feature_rank_computer, is_for_train):
 	[record_union_all, record_union_prev] = extract_unions(day_lists)
 	out = []
-	if not is_for_train:
+	if not is_for_train: # for test file: all kind of records are present
 		full_size = len(record_union_all)
 		for i in range(len(day_lists)):
 			expanded_data = dict(day_lists[i]) # copy
 			if i == 0:
-				tie_rank = label_rank_computer(day_lists[i], full_size)
+				tie_rank = label_rank_computer(day_lists[i], full_size) # do rank computation with label computer
 			else:
-				tie_rank = feature_rank_computer(day_lists[i], full_size)
+				tie_rank = feature_rank_computer(day_lists[i], full_size) # do rank computation with feature computer
 			for record in record_union_all:
-				if record not in day_lists[i]:
+				if record not in day_lists[i]: # set tie_rank for records at the end of the list (only present because of union!)
 					expanded_data[record] = tie_rank
 			out.append(expanded_data)
-	else:
+	else: # for train file: only records of feature days are present
 		full_size = len(record_union_prev)
 		for i in range(len(day_lists)):	
 			if i == 0:
@@ -175,7 +175,7 @@ def set_rankers(feature_rank_type, label_rank_type):
 		print 'ERROR: ' + rank_type + ' ranking is not implemented! Choose from "centrality/position/binary".'
 	return feature_ranker, label_ranker
 
-def extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, query_id, out_file, is_for_train):
+def extract_data(data_folder, top_cut, feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, query_id, out_file, is_for_train):
 	day_lists = []
 	for i in reversed(range(from_interval_id, to_interval_id+1)):
 		day_lists.append(pre_proc(data_folder,i, top_cut, (i==to_interval_id), label_rank_type, feature_rank_type))
@@ -212,7 +212,7 @@ if __name__ == "__main__":
 		for i in range(0,test_query_num):	
 			to_interval_id = test_interval_id + i
 			from_interval_id = to_interval_id - num_of_features
-			extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, i+1, f_test, False)
+			extract_data(data_folder, top_cut, feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, i+1, f_test, False)
 		f_test.close()
 
 		# extract train data
@@ -220,7 +220,7 @@ if __name__ == "__main__":
 		for i in range(1,train_query_num + 1):
 			to_interval_id = test_interval_id - i
 			from_interval_id = to_interval_id - num_of_features
-			extract_data(feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, i, f_train, True)
+			extract_data(data_folder, top_cut, feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, i, f_train, True)
 		f_train.close()
 
 	else:
