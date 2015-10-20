@@ -30,7 +30,7 @@ if __name__ == "__main__":
 			to_id = i
 			from_id = i - num_of_features
 			#print from_id, to_id
-			ig.extract_data(data_folder, top_cut, feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_id, to_id, i, f_out, enable_unseen)
+			ig.extract_data(data_folder, top_cut, feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_id, to_id, i, f_out, (not enable_unseen))
 		f_out.close()
 
 	else:
