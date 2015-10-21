@@ -84,9 +84,9 @@ def extract_feature_list(expanded_day_lists):
 	return current, feature_list
 
 ##################### pre-processors ###########################
-def pre_proc(input_folder ,day, top_cut, is_label, label_rank_type, feature_rank_type):
+def pre_proc(input_folder, file_prefix, day, top_cut, is_label, label_rank_type, feature_rank_type):
     # input files (e.g.: *.txt_s) are ordered according to centrality scores
-    file = open(input_folder + '/pagerank_scores_' + str(day) + '.txt_s')
+    file = open(input_folder + '/' + file_prefix + '_' + str(day) + '.txt_s')
     ret_val = {}
     ret_sort = []
     counter = 0
@@ -175,10 +175,10 @@ def set_rankers(feature_rank_type, label_rank_type):
 		print 'ERROR: ' + rank_type + ' ranking is not implemented! Choose from "centrality/position/binary".'
 	return feature_ranker, label_ranker
 
-def extract_data(data_folder, top_cut, feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, query_id, out_file, is_for_train):
+def extract_data(data_folder, file_prefix, top_cut, feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, query_id, out_file, is_for_train):
 	day_lists = []
 	for i in reversed(range(from_interval_id, to_interval_id+1)):
-		day_lists.append(pre_proc(data_folder,i, top_cut, (i==to_interval_id), label_rank_type, feature_rank_type))
+		day_lists.append(pre_proc(data_folder, file_prefix, i, top_cut, (i==to_interval_id), label_rank_type, feature_rank_type))
 	#print day_lists
 	expanded_data = expand_data(day_lists, label_ranker, feature_ranker, is_for_train)
 	#print expanded_data
@@ -212,7 +212,7 @@ if __name__ == "__main__":
 		for i in range(0,test_query_num):	
 			to_interval_id = test_interval_id + i
 			from_interval_id = to_interval_id - num_of_features
-			extract_data(data_folder, top_cut, feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, i+1, f_test, False)
+			extract_data(data_folder, file_prefix, top_cut, feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, i+1, f_test, False)
 		f_test.close()
 
 		# extract train data
@@ -220,7 +220,7 @@ if __name__ == "__main__":
 		for i in range(1,train_query_num + 1):
 			to_interval_id = test_interval_id - i
 			from_interval_id = to_interval_id - num_of_features
-			extract_data(data_folder, top_cut, feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, i, f_train, True)
+			extract_data(data_folder, file_prefix, top_cut, feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_interval_id, to_interval_id, i, f_train, True)
 		f_train.close()
 
 	else:

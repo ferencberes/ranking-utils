@@ -22,7 +22,7 @@ if __name__ == "__main__":
 		feature_ranker, label_ranker = ig.set_rankers(feature_rank_type, label_rank_type)
 		
 		if not os.path.exists(output_folder):
-					os.makedirs(output_folder)
+			os.makedirs(output_folder)
 
 		# extract test data
 		f_out = open(output_folder + '/' + name_generator(file_prefix, top_cut, num_of_features, from_interval_id, to_interval_id, enable_unseen) + ".txt", 'w')
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 			to_id = i
 			from_id = i - num_of_features
 			#print from_id, to_id
-			ig.extract_data(data_folder, top_cut, feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_id, to_id, i, f_out, (not enable_unseen))
+			ig.extract_data(data_folder, file_prefix, top_cut, feature_ranker, label_ranker, feature_rank_type, label_rank_type, from_id, to_id, i, f_out, (not enable_unseen))
 		f_out.close()
 
 	else:
